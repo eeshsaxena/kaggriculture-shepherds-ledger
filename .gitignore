@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+*.jsonl
+*.json
+replays/
+compact*/
+*.log
+*.nohup
