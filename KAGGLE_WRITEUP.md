@@ -26,7 +26,7 @@ the chassis sits at the bottom and makes a decision, then each layer gets a chan
 tweak that decision on its way out (see the diagram below). The two I submitted were
 `shepFOB4` (the full stack) and `shepFOB3n` (the same thing minus the last two layers).
 
-![The agent: one chassis, a stack of small layers](figures/architecture.svg)
+![The agent: one chassis, a stack of small layers](https://raw.githubusercontent.com/eeshsaxena/kaggriculture-shepherds-ledger/master/figures/architecture.png)
 
 The work really had three parts. First, understanding the market, which is what told me
 most of my "clever" ideas were actually hurting me. Second, the handful of layers that
@@ -138,7 +138,7 @@ single or double digits of dollars per game, against a live swing of around four
 thousand. On the live ladder, the thing I was optimizing went the wrong way (see the
 chart below).
 
-![Live rating across the lineage: offline said better, live said worse](figures/live_vs_offline.svg)
+![Live rating across the lineage: offline said better, live said worse](https://raw.githubusercontent.com/eeshsaxena/kaggriculture-shepherds-ledger/master/figures/live_vs_offline.png)
 
 My *earlier* agents had my best live ratings. shepFK sat at 2359 and shepFL at 2328, and
 then everything I "improved" after that came in lower, down to the pair I actually
