@@ -12,7 +12,13 @@ which intuitive edits provably do not.
 **Start here:** [`FINDINGS.md`](FINDINGS.md) is the distilled write-up of what we
 learned.
 
-## Headline result
+## Result
+
+**322nd of 10,246 teams (top ~3.1%), Silver medal.** A write-up for the Kaggle
+discussion forum is in [`WRITEUP.md`](WRITEUP.md); the distilled research is in
+[`FINDINGS.md`](FINDINGS.md).
+
+## Headline finding
 
 The shared market never mean-reverts inside a game, so holding a sale back does not
 get a better price later, it just lets the opponent sell into clear air. We measured
@@ -43,6 +49,7 @@ with 5 wins gained and none lost), with 0 errors and a clean release gate.
 ## Repository map
 
 ```
+WRITEUP.md           Kaggle discussion write-up (result + lessons)
 FINDINGS.md          Distilled research write-up (read this first)
 agents/              The two final submitted agents
 layers/              Our own layer implementations (the substance of the work)
