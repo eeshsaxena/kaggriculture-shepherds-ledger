@@ -1,184 +1,163 @@
 # 322nd Place Solution
 
-### A replay chassis plus measured pure-waste and sale-timing layers, and why our offline proxy lied to us
+### A replay chassis, a stack of small layers, and a lesson about trusting the wrong numbers
 
 **Kaggriculture** · Solution Writeup · 322nd place (Silver) · Oct 1, 2026
 
-Thanks to the hosts for a genuinely unusual competition. Most Kaggle competitions are
-static: there is a fixed test set and you push a score up. Kaggriculture is a live
-two-player economy judged by a Bradley-Terry fit over games played after the deadline,
-and that difference turned out to be the whole story of our solution, including its
-biggest mistake. I'll tell it honestly, because the negative results here are more
-useful than the wins.
+First, thanks to the hosts. This one is different from most Kaggle competitions and that
+difference ended up being the whole story for me. There is no fixed test set here. You
+submit agents, they play each other on a live ladder, and the final rank comes from a
+Bradley-Terry fit over games played after the deadline. I didn't fully respect what that
+meant until late, and it cost me, so I'm going to be honest about that part too.
 
-When I started, the public "Shepherd's Ledger" tape-replay chassis was already the
-strongest shared baseline. Rather than rewrite a 25k-line agent, I decided to treat it
-as fixed and ask a narrower question: given a strong replay agent, which small,
-auditable edits actually move win rate in this economy? Every change would be one
-*layer*, appended to the agent, wrapping the previous behaviour, reading the action it
-was about to take and editing only one narrow, measured case, falling back to the
-original action on any exception. That way every idea could be turned on or off and
-measured in isolation.
+I'll say upfront that I didn't build an agent from scratch. The public "Shepherd's
+Ledger" tape-replay chassis was already the strongest thing anyone was sharing, and
+rewriting 25,000 lines to maybe match it felt like the wrong bet. So I took it as fixed
+and asked a smaller question instead: given a strong replay agent, what small edits
+actually move win rate in this economy? Every idea became one *layer*, bolted onto the
+agent, wrapping whatever was underneath, looking at the action it was about to take and
+changing only one specific thing. If an idea didn't survive measurement, I ripped the
+layer back out. That kept everything honest and testable.
 
-## Overview of the approach
+## Overview
 
-The final agents are the Shepherd's Ledger chassis (routes are chosen at step 144 from
-the shops unlocked so far) plus a stack of our own layers. The two submitted agents:
+The final agents are the chassis plus a stack of these layers. Picture it as an onion:
+the chassis sits at the bottom and makes a decision, then each layer gets a chance to
+tweak that decision on its way out (see the diagram below). The two I submitted were
+`shepFOB4` (the full stack) and `shepFOB3n` (the same thing minus the last two layers).
 
-- **shepFOB4**: chassis + FAMTW + FEEDX + COWBANK + FINHARV + OVERSKIP23 + JIT (+ retune) + FCSKIP
-- **shepFOB3n**: the same without the last two layers
+![The agent: one chassis, a stack of small layers](figures/architecture.svg)
 
-The research split cleanly into three parts: (1) understanding the market, which
-explained why most intuitive levers are actively harmful; (2) building the handful of
-layers that survived measurement; and (3) a deterministic evaluation harness strong
-enough to tell a real $30/game gain from noise. I'll go through each, then the lesson I
-wish I'd learned a week earlier.
+The work really had three parts. First, understanding the market, which is what told me
+most of my "clever" ideas were actually hurting me. Second, the handful of layers that
+survived. Third, a test harness good enough to tell a real $30-per-game gain from pure
+noise. I'll walk through each, and then the mistake.
 
-## The one economic fact that governs everything
+## The one thing you have to understand about the market
 
-The shared market never mean-reverts inside a game. The price of a product is a pure
-function of its current market inventory, and inventory only changes through trades and
-a small fixed town consumption (each unlocked shop eats 1 to 2 of its products every 4
-steps; the town center eats a few products every 24 steps). There is no daily price
-recovery.
+The market never recovers inside a game. A product's price depends only on how much of
+it is currently sitting in the market, and that number only moves when someone trades or
+when the town eats a little on a fixed schedule. There's no "the price will bounce back
+tomorrow."
 
-This single fact has a brutal consequence: **holding a sale back does not get you a
-better price later, it just lets the opponent sell into clear air.** I measured this
-over and over, and every sell-restraint or deferral idea helped the opponent 2 to 4
-times more than it helped us. Sale metering (dripping 1 to 3 units per step), holding
-for recovery, early-dumping to "set" a price: all negative. In this game, dumping is a
-weapon and restraint is a gift to your opponent.
+Once that clicked, a lot of my instincts turned out to be backwards. If I hold a lot
+back to sell it later at a better price, the price doesn't go up, I've just stepped
+aside and let my opponent sell into empty space. I tested this more times than I'd like
+to admit, and it was always the same answer: holding back helps the opponent two to four
+times more than it helps me. In this game, dumping is a weapon and patience is a gift to
+the other player.
 
-The second half of the fact is that **town demand, not supply, sets the ceiling.** A
-product with an unlocked shop is consumed on a schedule, so its price holds (tomato
-reached ~$244 against a base of 60 in shop-rich worlds); a product with no shop only
-ever falls (fertilizer has no town demand at all and decays to single digits by the end
-of the game). Producing the right thing for the shops that unlock is worth more than any
-trading cleverness, and that is exactly the part a layer on a frozen route cannot fix.
+The flip side is that demand, not supply, sets the ceiling. If a shop for a product
+unlocks, the town keeps buying it and the price stays up (I saw tomato sit around $244
+against a base of 60 in the right world). If no shop unlocks for it, the price only ever
+falls, fertilizer has no town demand at all and rots down to almost nothing by the end.
+So the thing that actually wins games is producing the right stuff for the shops you
+draw, and that is exactly the decision the chassis locks in early, before any of my
+layers get a vote. More on that later, it's the ceiling I couldn't break.
 
-So only two kinds of edit were ever going to work: pure-waste fixes, and one very
-specific kind of deferral.
+So realistically only two kinds of edit were ever going to help: fixing pure waste, and
+one very particular kind of patience.
 
-## The layers that worked
+## The layers that actually worked
 
-### Pure-waste fixes
+**Pure-waste fixes.** These are the safe ones, they only ever grab back something the
+agent was about to throw away.
 
-These remove an action or purchase that cannot pay back, or recover value the engine
-would otherwise destroy. They are safe almost by definition, they only ever reclaim
-something that was being thrown away.
+- *FEEDX* stops feeding animals in the last few days when they can't produce again
+  anyway. The wheat you'd have spent just stays with you.
+- *COWBANK* stops over-feeding a cow once it's already banked enough days to mature on
+  time.
+- *FINHARV* harvests a finished crop the agent was about to walk past and leave on the
+  tile.
+- *OVERSKIP23* notices when the shed is full and the nightly auto-drop is about to
+  destroy the tail of your cargo, and drops the low-value stuff instead of the good stuff.
+- *FCSKIP* is my favorite of the bunch. Fertilizer is nearly worthless late (no shop
+  ever buys it), but the agent keeps dutifully collecting it, and then at the day-end
+  drop that junk fertilizer shoves actual strawberries and eggs out of a full shed. So
+  FCSKIP looks ahead at the rest of the day's harvest, and if it can see the shed will
+  overflow, it just skips the fertilizer pickup so the valuable stuff survives.
+  Fertilizer resets every night anyway, so you lose exactly one unit of nothing. Worth
+  about +$47 a game against the top teams and +$30 across a thousand twin replays, with
+  five games flipped from loss to win and none the other way.
 
-- **FEEDX** skips day 26 to 28 feeds on animals that can no longer produce before the
-  game ends. The wheat that would have been spent stays in inventory and reaches the
-  shed.
-- **COWBANK** skips surplus pre-production cow feeds once enough fed-and-cared days are
-  already banked for the cow to mature on time.
-- **FINHARV** turns a wasted WATER or PASS on a finished tomato or strawberry tile into
-  a HARVEST, collecting a lot the agent was about to leave on the tile.
-- **OVERSKIP23** drops hour-23 actions that add cargo the nightly auto-drop would
-  destroy (shed full, tail of the inventory lost), keeping the higher-value items.
-- **FCSKIP** was the nicest of these. Fertilizer has no town demand, so late in the game
-  it is nearly worthless, yet the agent keeps collecting it, and at the day-end drop that
-  worthless fertilizer displaces strawberries and eggs out of a full shed. FCSKIP does a
-  tape lookahead of the day's remaining harvests, and when it sees the shed will overflow
-  it skips the fertilizer collect so the valuable product survives the drop. Fertilizer
-  resets nightly, so a skipped collect forfeits exactly one unit. Measured +$47/game on
-  the top-team panel and +$30 across 1,036 twin replays with 5 wins gained and none lost.
+**JIT, the one time patience pays.** The exception to "never hold a sale" is when you're
+not fighting the price curve, you're timing a specific opponent. In games against a
+poorer opponent, JIT watches when they tend to sell each product, and holds our matching
+lot until just before their next predicted sale. They sell first into the low price, and
+then we sell. It's carefully fenced in (room check, cash check, a hard deadline to dump
+everything, and some bookkeeping so the inner layers don't get confused). A later tweak
+also made sure that when a held lot finally gets released, it slots in ahead of our own
+lower-value sales rather than behind them, which sounds tiny but was worth about +$100 a
+game on its own.
 
-### JIT: the only deferral that helps
+Put together, `shepFOB4` beat `shepFOB3n` on every panel I had: +$68 a game in one
+seat, +$180 against the top teams, +$151 against the strongest adaptive opponent, +$78
+on the top-5 panel, +$26 on the public field, and +$30 across the twin replays with five
+more wins and zero new losses. Clean on the release gate too.
 
-The one exception to "never hold a sale" is to hold it against a *specific predicted
-opponent sale* rather than against the price curve. In non-twin games where the opponent
-is poorer, JIT records the opponent's per-item sale steps over a lookback window and
-holds our own strawberry / milk / wool / carrot / tomato lots until just before the
-opponent's predicted next sale of that item. The opponent sells first into the low
-price, then we sell after. It is gated, with a room guard, a cash guard, a deadline
-release, and ledger patching so the inner layers stay consistent.
+## How I measured things
 
-A later retune extended the hold window and added order-aware release placement: when a
-held lot is released, it is re-inserted right after the last existing sale lot of
-equal-or-greater value, so it never demotes a more valuable lot in the per-unit market
-lockstep. That detail alone was worth ~+$100/game on the top-team panel.
+The agent has a time budget, which means it isn't even deterministic, run it twice and
+you get two answers. So everything ran with a frozen clock and a fixed hash seed, so two
+builds could only differ because of their code. On top of that I had a few panels:
+replaying recorded top-team games with the opponent pinned and my agent dropped into one
+seat; replaying about a thousand of my own past games where the opponent was running the
+same public code (the most sensitive test, since those margins are razor-thin); a
+gauntlet against public agents on fresh seeds; and a release gate checking speed, memory
+leaks between games, and that malformed inputs don't crash it.
 
-**shepFOB4 vs shepFOB3n**, on the offline panels: akmr seat +$68/game, top teams +$180,
-feel-the-agi +$151 (1 win gained), top-5 +$78, public field +$26, 1,036 twin replays
-+$30 (5 wins gained, 0 lost), 0 errors everywhere, clean release gate.
+One trap worth mentioning: testing a fork against an identical copy of itself is
+meaningless. Two identical agents tie exactly, so any change "wins" purely by stealing
+from its own twin. Everything had to be measured against a genuinely different opponent.
 
-## The validation harness
+## What didn't work (the useful half)
 
-The agent has a wall-clock budget, so the same agent gives different results run to run.
-Everything therefore runs with a fixed clock and `PYTHONHASHSEED=0`, so two builds differ
-only because of their code. On top of that:
+- Any kind of sale timing against the price curve, metering it out, holding for a
+  bounce, front-running generic sales. All flat or negative.
+- Selling wheat right after an opponent's big wheat buys. Looked great, because their buy
+  lifts the price, but the lift is gone a step later when they sell it back. Median gain:
+  zero.
+- Trying to bolt better production onto the frozen route. The top teams win on structure,
+  more geese in egg worlds, tomatoes sized to demand, a fourth plot of land early, and
+  my route is locked by day 11. Every swap I tried fought the chassis and lost. This is
+  the real ceiling and no layer gets past it.
+- Five separate "surely there's waste here" investigations that turned up nothing after I
+  actually traced the engine: end-game leftovers, idle workers, rejected orders, capped
+  production, narrow losses. Either the chassis already handled it or the loss was
+  structural, not a bug.
+- A twin pre-sell trick that measured +$17 a game but was a landmine, nudging one order
+  desynced about thirty inner layers and produced a single -$1,900 blowup. Cut it.
 
-- **Pinned-world seat substitution:** replay a recorded top-team game, drop the candidate
-  into one seat, and pin the opponent's tape, the shop-unlock sequence and the weeds, so
-  the candidate's play is the only variable.
-- **Live twin replays:** ~1,036 of our own recorded live games where the opponent ran the
-  same public-family code, candidate in our seat, opponent tape fixed. These are the most
-  sensitive panel for win flips, since twin margins are tight.
-- **Public field gauntlet** on fresh seeds.
-- **Release gate:** per-step latency, cross-episode state leakage (one loaded copy vs a
-  fresh copy per episode on the same seeds), and crash fuzz on malformed observations.
+## The part I got wrong
 
-A hard-won measurement note: mirror panels (a fork against an identical fork) are
-invalid, identical forks tie exactly, so any perturbation "wins" by stealing from its
-twin. Everything was measured against a *different* opponent, on absolute bank and
-win-rate, with a disjoint confirmation block.
+Here's the honest bit, and it's the thing I'd actually want someone to take away.
 
-## What did not work (the useful part)
+Every layer above passed my offline panels, and every version beat the one before it.
+But those panels replay *fixed* opponents, and the gains I was chasing were small,
+single or double digits of dollars per game, against a live swing of around four
+thousand. On the live ladder, the thing I was optimizing went the wrong way (see the
+chart below).
 
-- **Any sale timing against the price curve:** metering, holding for recovery,
-  front-running generic opponent sales. All negative or zero.
-- **Selling wheat into an adaptive opponent's buys.** Opponents who buy 100 to 300 wheat
-  per day lift the price, so selling right after them looked promising, but the lift is
-  transient (they sell the lot back next step) and the realistic gain was a median of $0.
-- **Grafting production structure onto a frozen route.** The top teams win on structure:
-  geese and eggs sized to egg shops from day 0, tomatoes sized to demand, a fourth
-  quadrant by day 10. Our route freezes the herd and crop plan by day 11, and every
-  attempt to change it with a layer (herd swaps, geese-for-sheep, route-table swaps,
-  eager fertilizer) fought the chassis and measured negative. This is the real ceiling.
-- **Five separate pure-waste lenses that came up empty** after engine-exact audits:
-  end-game stranded stock, idle labour, rejected market orders, production lost to caps,
-  and narrow-loss execution errors. In each case the chassis already handled it, or the
-  loss was structural rather than an execution bug.
-- **A twin one-step pre-sell lever** that measured +$17/twin game but turned out to be a
-  butterfly: appending or suppressing one order desynchronized ~30 inner layers' ledgers
-  and produced one -$1,900 game. Rejected.
+![Live rating across the lineage: offline said better, live said worse](figures/live_vs_offline.svg)
 
-## The lesson I'd most want to pass on: our offline proxy did not predict live rank
+My *earlier* agents had my best live ratings. shepFK sat at 2359 and shepFL at 2328, and
+then everything I "improved" after that came in lower, down to the pair I actually
+submitted at 2188 and 2129. The offline wins were real, they just didn't mean anything
+on a reactive ladder. I was polishing a number that didn't predict the one that counts.
 
-This is the mistake, and it is the most important paragraph here.
+If I did this again I'd trust the live signal way more than my offline panels, keep the
+pure-waste fixes (those were genuinely fine), and stop the moment a change's per-game
+edge dropped under the live noise. On a live-judged competition your offline harness has
+to earn your trust by matching live results, and mine quietly stopped doing that while I
+kept believing it.
 
-Every layer above was validated on the deterministic offline panels, and every step in
-our chain measured as an improvement over its parent. But the offline panels replay
-*fixed* opponent tapes, and the gains I was chasing were small ($6 to $180 per game)
-against a live game-to-game swing of around $4,000. On the live ladder, the line
-actually drifted the wrong way:
-
-| Agent | Live rating |
-|---|---|
-| shepFK | 2359 |
-| shepFL | 2328 |
-| shepFN | 2236 |
-| shepFM | 2228 |
-| shepFOB3n (submitted) | 2188 |
-| shepFOB4 (submitted) | 2129 |
-
-Our *earlier* agents had the highest live ratings. The later, offline-validated agents
-scored lower. The small offline improvements were real against a static tape and too
-small and too static to climb a reactive ladder. By the measure that actually resembles
-the final Bradley-Terry ranking, continuing to iterate past shepFK/shepFL did not help,
-and probably cost us a little.
-
-If I ran this again I would weight live-ladder evidence far above offline panel margins,
-keep the pure-waste fixes (those were sound), and stop iterating the moment the measured
-per-game gain dropped below the live noise floor. On a live-judged competition, your
-offline harness has to be validated against live outcomes, not trusted because it is
-precise.
+Still, 322nd out of 10,246 and a Silver, and I came out of it actually understanding the
+game. I'll take it.
 
 ## Code
 
-Full code, both agents, every layer's source, the evaluation harness, and the detailed
-findings: **https://github.com/eeshsaxena/kaggriculture-shepherds-ledger**
+Everything is here, both agents, every layer, the full harness, and the detailed
+numbers: **https://github.com/eeshsaxena/kaggriculture-shepherds-ledger**
 
-Thanks to the Shepherd's Ledger authors for the base chassis, and to the hosts and the
-community. 322nd of 10,246 and a Silver, and a clear idea of what I'd do differently.
+Thanks to the Shepherd's Ledger authors for the base, and to the hosts and everyone in
+the discussions.

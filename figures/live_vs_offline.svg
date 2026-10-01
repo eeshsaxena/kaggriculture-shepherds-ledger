@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 470" font-family="-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+  <rect width="820" height="470" fill="#ffffff"/>
+  <text x="32" y="42" font-size="23" font-weight="700" fill="#111827">The mistake: offline said "better", the live ladder said "worse"</text>
+  <text x="32" y="68" font-size="14" fill="#6b7280">Each new agent beat its parent on the offline panels. Its live rating still went down.</text>
+
+  <!-- axes -->
+  <line x1="92" y1="100" x2="92" y2="392" stroke="#9ca3af" stroke-width="1.5"/>
+  <line x1="92" y1="392" x2="712" y2="392" stroke="#9ca3af" stroke-width="1.5"/>
+  <!-- y gridlines -->
+  <g font-size="12" fill="#9ca3af">
+    <line x1="92" y1="112" x2="712" y2="112" stroke="#f3f4f6"/><text x="56" y="116">2360</text>
+    <line x1="92" y1="195" x2="712" y2="195" stroke="#f3f4f6"/><text x="56" y="199">2280</text>
+    <line x1="92" y1="278" x2="712" y2="278" stroke="#f3f4f6"/><text x="56" y="282">2200</text>
+    <line x1="92" y1="361" x2="712" y2="361" stroke="#f3f4f6"/><text x="56" y="365">2120</text>
+  </g>
+  <text x="34" y="250" font-size="13" fill="#374151" transform="rotate(-90 34 250)">live ladder rating</text>
+
+  <!-- trend line -->
+  <polyline points="120,112 232,144 344,247 456,239 568,289 680,350" fill="none" stroke="#ef4444" stroke-width="2.5"/>
+
+  <!-- offline "up" annotation -->
+  <text x="150" y="150" font-size="13" fill="#2563eb">offline panels: every step measured as an improvement  &#8599;</text>
+
+  <!-- points -->
+  <g font-size="13" fill="#374151" text-anchor="middle">
+    <circle cx="120" cy="112" r="6" fill="#9ca3af"/><text x="120" y="98">2359</text><text x="120" y="412" font-weight="600">shepFK</text>
+    <circle cx="232" cy="144" r="6" fill="#9ca3af"/><text x="232" y="130">2328</text><text x="232" y="412" font-weight="600">shepFL</text>
+    <circle cx="344" cy="247" r="6" fill="#9ca3af"/><text x="344" y="233">2228</text><text x="344" y="412">shepFM</text>
+    <circle cx="456" cy="239" r="6" fill="#9ca3af"/><text x="456" y="225">2236</text><text x="456" y="412">shepFN</text>
+    <circle cx="568" cy="289" r="7" fill="#7c3aed"/><text x="568" y="275">2188</text><text x="568" y="412" font-weight="600" fill="#7c3aed">shepFOB3n</text>
+    <circle cx="680" cy="350" r="7" fill="#7c3aed"/><text x="680" y="336">2129</text><text x="680" y="412" font-weight="600" fill="#7c3aed">shepFOB4</text>
+  </g>
+
+  <!-- submitted bracket -->
+  <text x="624" y="436" font-size="12.5" fill="#7c3aed" text-anchor="middle">submitted (final pair)</text>
+  <line x1="548" y1="424" x2="700" y2="424" stroke="#7c3aed" stroke-width="1.5"/>
+
+  <text x="92" y="458" font-size="12.5" fill="#6b7280">Lesson: on a live-judged competition, trust the live signal, and stop iterating once per-game gains drop below the live noise floor.</text>
+</svg>

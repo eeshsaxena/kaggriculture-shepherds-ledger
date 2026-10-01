@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 560" font-family="-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+  <rect width="820" height="560" fill="#ffffff"/>
+  <text x="32" y="44" font-size="23" font-weight="700" fill="#111827">How the agent is built: one chassis, a stack of small layers</text>
+  <text x="32" y="70" font-size="14" fill="#6b7280">Each layer wraps the one below it, reads the action it was about to take, and edits only one narrow, measured case.</text>
+
+  <!-- flow arrows -->
+  <text x="690" y="112" font-size="13" fill="#374151">observation in</text>
+  <text x="690" y="470" font-size="13" fill="#374151">action out</text>
+  <defs>
+    <marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#9ca3af"/></marker>
+  </defs>
+  <line x1="748" y1="120" x2="748" y2="448" stroke="#d1d5db" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- layer stack (outermost at top) -->
+  <!-- FCSKIP -->
+  <rect x="32" y="92" width="620" height="44" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="48" y="113" font-size="15" font-weight="600" fill="#065f46">FCSKIP</text>
+  <text x="48" y="130" font-size="12.5" fill="#047857">skip late fertilizer collects that would push strawberries/eggs out of a full shed at the day-end drop</text>
+
+  <!-- JIT -->
+  <rect x="42" y="144" width="600" height="44" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="58" y="165" font-size="15" font-weight="600" fill="#1e3a8a">JIT  (+ retune)</text>
+  <text x="58" y="182" font-size="12.5" fill="#1d4ed8">hold a lot until just before the opponent's predicted sale, so they sell first into the low price</text>
+
+  <!-- OVERSKIP23 -->
+  <rect x="52" y="196" width="580" height="40" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="68" y="214" font-size="15" font-weight="600" fill="#065f46">OVERSKIP23</text>
+  <text x="68" y="230" font-size="12.5" fill="#047857">drop hour-23 actions that add cargo the nightly auto-drop would destroy</text>
+
+  <!-- FINHARV -->
+  <rect x="62" y="244" width="560" height="40" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="78" y="262" font-size="15" font-weight="600" fill="#065f46">FINHARV</text>
+  <text x="78" y="278" font-size="12.5" fill="#047857">harvest a finished crop the agent was about to leave on the tile</text>
+
+  <!-- COWBANK -->
+  <rect x="72" y="292" width="540" height="40" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="88" y="310" font-size="15" font-weight="600" fill="#065f46">COWBANK</text>
+  <text x="88" y="326" font-size="12.5" fill="#047857">skip surplus cow feeds once enough days are already banked</text>
+
+  <!-- FEEDX -->
+  <rect x="82" y="340" width="520" height="40" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="98" y="358" font-size="15" font-weight="600" fill="#065f46">FEEDX</text>
+  <text x="98" y="374" font-size="12.5" fill="#047857">skip end-game feeds on animals that can no longer produce</text>
+
+  <!-- FAMTW -->
+  <rect x="92" y="388" width="500" height="40" rx="8" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.5"/>
+  <text x="108" y="406" font-size="15" font-weight="600" fill="#374151">FAMTW</text>
+  <text x="108" y="422" font-size="12.5" fill="#4b5563">classify the opponent as a twin so the right levers switch on (never edits an action)</text>
+
+  <!-- chassis base -->
+  <rect x="102" y="436" width="480" height="48" rx="8" fill="#111827"/>
+  <text x="118" y="457" font-size="15" font-weight="700" fill="#ffffff">Shepherd's Ledger chassis  (public baseline)</text>
+  <text x="118" y="475" font-size="12.5" fill="#d1d5db">tape-replay agent; the route is chosen at step 144 from the shops unlocked so far</text>
+
+  <!-- legend -->
+  <rect x="32" y="508" width="16" height="16" rx="3" fill="#ecfdf5" stroke="#10b981"/>
+  <text x="54" y="521" font-size="13" fill="#374151">pure-waste fix (reclaims value being thrown away)</text>
+  <rect x="360" y="508" width="16" height="16" rx="3" fill="#eff6ff" stroke="#3b82f6"/>
+  <text x="382" y="521" font-size="13" fill="#374151">targeted deferral</text>
+  <rect x="520" y="508" width="16" height="16" rx="3" fill="#f3f4f6" stroke="#9ca3af"/>
+  <text x="542" y="521" font-size="13" fill="#374151">classification only</text>
+</svg>
