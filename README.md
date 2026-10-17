@@ -14,7 +14,7 @@ learned.
 
 ## Result
 
-**322nd of 10,246 teams (top ~3.1%), Silver medal.** A write-up for the Kaggle
+**473rd of 10,148 teams (top ~4.7%), Silver medal**, final standings once the post-deadline ladder settled (the write-ups were first posted while the board read 322nd). A write-up for the Kaggle
 discussion forum is in [`WRITEUP.md`](WRITEUP.md); the distilled research is in
 [`FINDINGS.md`](FINDINGS.md).
 

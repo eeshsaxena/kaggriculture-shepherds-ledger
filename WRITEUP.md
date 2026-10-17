@@ -1,6 +1,6 @@
-# 322nd / 10,246 (Silver): what moved win rate in Kaggriculture, and what didn't
+# 473rd / 10,148 (Silver): what moved win rate in Kaggriculture, and what didn't
 
-Final result: **322nd of 10,246 teams, Silver medal.** Final pair `shepFOB4` and
+Final result: **473rd of 10,148 teams, Silver medal** (final standings; this was first posted at 322nd while the post-deadline ladder was still running). Final pair `shepFOB4` and
 `shepFOB3n`, both the public "Shepherd's Ledger" tape-replay chassis with a stack of
 our own layers on top.
 

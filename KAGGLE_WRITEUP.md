@@ -1,8 +1,8 @@
-# 322nd Place Solution
+# 473rd Place Solution
 
 ### A replay chassis, a stack of small layers, and a lesson about trusting the wrong numbers
 
-**Kaggriculture** · Solution Writeup · 322nd place (Silver) · Oct 1, 2026
+**Kaggriculture** · Solution Writeup · 473rd place (Silver, final standings) · first posted Oct 1, 2026 at 322nd
 
 First, thanks to the hosts. This one is different from most Kaggle competitions and that
 difference ended up being the whole story for me. There is no fixed test set here. You
@@ -151,7 +151,7 @@ edge dropped under the live noise. On a live-judged competition your offline har
 to earn your trust by matching live results, and mine quietly stopped doing that while I
 kept believing it.
 
-Still, 322nd out of 10,246 and a Silver, and I came out of it actually understanding the
+Still, 473rd out of 10,148 and a Silver, and I came out of it actually understanding the
 game. I'll take it.
 
 ## Code
